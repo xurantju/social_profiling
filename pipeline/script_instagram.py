@@ -1,39 +1,49 @@
 import pdb
 import json, urllib2
 
-
 from pipeline import Pipeline, _load_obj
 
 def _get_pipeline(data_source):
 	return Pipeline(data_source=data_source)
 
 
-def single_address_full_pipeline():
-	data_source = 'instagram'
-	pipeline = _get_pipeline(data_source)
+def single_address_full_pipeline(pipeline, query):
+	# step 1: query retsly to get listing geolocation
+	coordinates, address, retsly_ids = pipeline.query_retsly_v1()
+	sf_data = _load_obj('static_10_sf_city')
+	max_listing = 3
+	ids = 0
+	for k,v in enumerate(sf_data):
+		print k,v # v is id for one listing
+		idx = retsly_ids.index(v)
+		print retsly_ids[idx], address[idx]
+		urls, text = pipeline.post_retrieval(sf_data[v], query)
+		ids += 1
+		if ids >= max_listing:
+			break
+	return urls, text
+
+def sf_batch_full_pipeline(pipeline, query):
 
 	# step 1: query retsly to get listing geolocation
 	coordinates, address, retsly_ids = pipeline.query_retsly_v1()
-
 	# get instgram media data
 	#geolocation_tuple = [-122.4120249,37.73691843]
 	#current_loc_trulia = [-122.3981040, 37.788900]
-	pipeline.query_instagram_media(coordinates)
 
-
-def sf_batch_full_pipeline():
-	data_source = 'instagram'
-	pipeline = _get_pipeline(data_source)
-
-	# step 1: query retsly to get listing geolocation
-	coordinates, address, retsly_ids = pipeline.query_retsly_v1()
-	pdb.set_trace()
-	# get instgram media data
-	#geolocation_tuple = [-122.4120249,37.73691843]
-	#current_loc_trulia = [-122.3981040, 37.788900]
+	# step 2: query instagram to get social media data
 	try:
+		sf_data = _load_obj('static_10_sf_city')
+	except:
+		pipeline.query_instagram_media(coordinates, retsly_ids, 10)
 
-	pipeline.query_instagram_media(coordinates, retsly_ids, 10)
+	# step 3: build wordvec similarities and topics from each listing 
+	for k,v in enumerate(sf_data):
+		print k,v # v is id for one listing
+		idx = retsly_ids.index(v)
+		print retsly_ids[idx], address[idx]
+		urls, text = pipeline.post_retrieval(sf_data[v], query)
+		pdb.set_trace()
 
 
 def query_instagram_location():
@@ -47,4 +57,8 @@ def query_instagram_location():
 
 
 if __name__ == "__main__":
-	sf_batch_full_pipeline()
+	query = 'restaurant'
+	pipeline = _get_pipeline('instagram')
+	#sf_batch_full_pipeline(query)
+	urls, text = single_address_full_pipeline(pipeline, query)
+	pdb.set_trace()
