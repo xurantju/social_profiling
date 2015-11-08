@@ -65,7 +65,9 @@ class Pipeline(object):
 			'1445929199', '1445842799', '1445756399', '1446857999', '1446771599', '1446685199', '1446598799',
 			'1446512399', '1446425999', '1446335999', '1446249599', '1446163199', '1446076799']
 		print 'loading wordvec model: 3.6GB'
-		#self.wordvec_model = Word2Vec.load_word2vec_format('/home/parallels/ranxu/data/GoogleNews-vectors-negative300.bin', binary=True)
+		self.wordvec_model = Word2Vec.load_word2vec_format('/home/parallels/ranxu/data/GoogleNews-vectors-negative300.bin', binary=True)
+		print 'finished loading this huge model.....yah'
+
 
 	@staticmethod
 	def query_instagram_location(geolocation_tuple):
@@ -191,7 +193,6 @@ class Pipeline(object):
 			if not np.isnan(mean_sim):
 				inst_similarities[v] = mean_sim
 		sorted_sim = sorted(inst_similarities.items(), key=operator.itemgetter(1), reverse=True)
-
 		# retrieve top 9
 		max_retrieved = np.min((len(sorted_sim), self.retrieve_top))
 		top_selection = sorted_sim[:max_retrieved]
@@ -216,4 +217,83 @@ class Pipeline(object):
 					return_urls.append(inst_data['img'])
 					return_text.append(text)
 				#pdb.set_trace()
+		return return_urls, return_text
+
+
+	# step 3: do tag/key word retrieval
+	#post_retrieval_without_uid(inst_urls, inst_captions, query_word)
+
+	def post_retrieval_without_uid(self, inst_urls, inst_captions, query):
+
+		def tokenizer(text, stop_words):
+			words = re.sub("[^a-zA-Z]", " ", text).split()
+			filtered_words = [w for w in words if not w in stop_words]
+			return filtered_words
+
+		def get_wordvec_similarity(words):
+			return_sims = []
+			for word in words:
+				try:
+					sim = self.wordvec_model.similarity(word, query)
+					return_sims.append(sim)
+				except KeyError:
+					# instagram word is not in wordvec dicitonary
+					pass
+			return return_sims
+
+		# store wordvec similarities over all instagram posts
+		inst_similarities = dict()
+		for i in xrange(len(inst_urls)):
+			print inst_urls[i], inst_captions[i]
+			caption_text = inst_captions[i]
+			# clean text
+			filtered_captions = tokenizer(caption_text, stop_words)
+			# do similarity over captions
+			#pdb.set_trace()
+			caption_sims = get_wordvec_similarity(filtered_captions) # check None
+			try:
+				#mean_sim = (np.sum(caption_sims) + np.sum(comments_sims)) / float(len(comments_sims) + len(caption_sims))
+				#mean_sim = np.sum(caption_sims) / float(len(caption_sims))
+				# maybe only select top 3-5 word
+				topN = np.min((3, len(caption_sims)))
+				top_sim = np.sort(caption_sims)[-topN:]
+				mean_sim = np.sum(top_sim) / float(topN)
+
+				#print np.sum(caption_sims) + np.sum(comments_sims), float(len(comments_sims) + len(caption_sims)), mean_sim
+			except:
+				# no words, though we already checked caption...anyway...
+				mean_sim = -1
+			if not np.isnan(mean_sim):
+				inst_similarities[i] = mean_sim
+		sorted_sim = sorted(inst_similarities.items(), key=operator.itemgetter(1), reverse=True)
+		# retrieve top 9
+		max_retrieved = np.min((len(sorted_sim), self.retrieve_top))
+		top_selection = sorted_sim[:max_retrieved]
+		return_urls = []
+		return_text = []
+		for k, v in top_selection:
+			print k, v
+			return_text.append(inst_captions[k])
+			return_urls.append(inst_urls[k])
+		'''
+		for i in xrange(len(top_selection)):
+			score = top_selection[i][1]
+			#pdb.set_trace()
+			inst_id = top_selection[i][0]
+			#inst_data = retsly_data[inst_id]
+			text = None
+			if inst_data['caption'] != None:
+				text = inst_data['caption']['text']
+				print text
+			if inst_data['img'] != None:
+				rr = requests.get(inst_data['img'], allow_redirects=False, timeout=10.00)
+				if rr.status_code == 200:
+					# download the image
+					if Image.open(StringIO(rr.content)).getbbox() != None:
+						fpath = os.path.join(self.image_dir, self.city, inst_id+'_'+query+'_top_'+str(i))
+						Image.open(StringIO(rr.content)).save(fpath, 'JPEG', quality=100)
+					return_urls.append(inst_data['img'])
+					return_text.append(text)
+				#pdb.set_trace()
+		'''
 		return return_urls, return_text

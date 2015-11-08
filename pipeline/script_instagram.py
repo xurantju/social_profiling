@@ -12,15 +12,19 @@ def _get_database(lg, la, rg):
 
 def single_address_full_pipeline(pipeline, query):
 	# step 1: query retsly to get listing geolocation
-	coordinates, address, retsly_ids = pipeline.query_retsly_v1()
-	sf_data = _load_obj('static_10_sf_city')
+	coordinates, address, retsly_ids, house_image_urls, descriptions = pipeline.query_retsly_v1()
+	pdb.set_trace()
+	sf_data = _load_obj('static_10_sf_city_larger')
 	max_listing = 3
 	ids = 0
 	for k,v in enumerate(sf_data):
 		print k,v # v is id for one listing
 		idx = retsly_ids.index(v)
 		print retsly_ids[idx], address[idx]
+		pdb.set_trace()
+		# 0358d2ba3e8f74256e993f5b398cb2b1
 		urls, text = pipeline.post_retrieval(sf_data[v], query)
+		pdb.set_trace()
 		ids += 1
 		if ids >= max_listing:
 			break
@@ -84,12 +88,12 @@ def write_json_sf_top5():
 		count = 0
 		for k2, v2 in enumerate(inst_data):
 			inst_one = inst_data[v2]
-			if inst_one['caption'] != None:
-				inst_captions += inst_one['caption']['text']
-				inst_captions += '_!@#' + str(k2) + '*()_'
-			if inst_one['img'] != None:
-				inst_img_urls += inst_one['img']
-				inst_img_urls += '_!@#' + str(k2) + '*()_'
+			if inst_one['caption'] == None or inst_one['img'] == None:
+				continue
+			inst_captions += inst_one['caption']['text']
+			inst_captions += '_!@#*()_'
+			inst_img_urls += inst_one['img']
+			inst_img_urls += '_!@#*()_'
 
 		sf_test_top_5_house.append({'name' : retsly_ids[idx], 'latitude' : float(coordinates[idx][1]),
 			'longitude' : float(coordinates[idx][0]), 'url' : house_img_urls[idx], 'description' : descriptions[idx],
@@ -97,7 +101,7 @@ def write_json_sf_top5():
 		# store house info to json
 		pdb.set_trace()
 
-	with open('sf_test_top_5_house.json', 'w') as fp:
+	with open('sf_test_top_5_house_v2.json', 'w') as fp:
 		json.dump(sf_test_top_5_house, fp)
 
 	pdb.set_trace()	
@@ -118,11 +122,15 @@ if __name__ == "__main__":
 	lg = -122.4509693 
 	la = 37.7584192
 	rg = 1
-	Database_query = _get_database(lg, la, rg)
-	res = Database_query.connect()
-	pdb.set_trace()
+	#Database_query = _get_database(lg, la, rg)
+	#res = Database_query.connect()
+	#pdb.set_trace()
 	#sf_batch_full_pipeline(query)
 	#urls, text = single_address_full_pipeline(pipeline, query)
 	#more_sf_data('static_10_sf_city_larger')
+
+
+
+
 	write_json_sf_top5()
 	pdb.set_trace()
