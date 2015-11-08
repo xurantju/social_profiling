@@ -166,13 +166,16 @@ class Pipeline(object):
 			# do similarity over captions
 			caption_sims = get_wordvec_similarity(filtered_captions) # check None
 			# do similarity over commets 
-			comments_sims = []
+			#comments_sims = []
+			# do not process comments
+			'''
 			if instance['comments'] != None:
 				filtered_comments = []
 				for i in xrange(len(instance['comments'])):
 					comment_text = instance['comments'][i]['text']
 					filtered_comments += tokenizer(caption_text, stop_words)
 				comments_sims = get_wordvec_similarity(filtered_comments)
+			'''
 			try:
 				#mean_sim = (np.sum(caption_sims) + np.sum(comments_sims)) / float(len(comments_sims) + len(caption_sims))
 				#mean_sim = np.sum(caption_sims) / float(len(caption_sims))
@@ -181,7 +184,7 @@ class Pipeline(object):
 				top_sim = np.sort(caption_sims)[-topN:]
 				mean_sim = np.sum(top_sim) / float(topN)
 
-				print np.sum(caption_sims) + np.sum(comments_sims), float(len(comments_sims) + len(caption_sims)), mean_sim
+				#print np.sum(caption_sims) + np.sum(comments_sims), float(len(comments_sims) + len(caption_sims)), mean_sim
 			except:
 				# no words, though we already checked caption...anyway...
 				mean_sim = -1

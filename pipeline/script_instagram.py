@@ -2,10 +2,13 @@ import pdb
 import json, urllib2
 
 from pipeline import Pipeline, _load_obj, _save_json
+from Database_query import DatabaseQuery
 
 def _get_pipeline(data_source):
 	return Pipeline(data_source=data_source)
 
+def _get_database(lg, la, rg):
+	return DatabaseQuery(lg=lg, la=la, rg=rg)
 
 def single_address_full_pipeline(pipeline, query):
 	# step 1: query retsly to get listing geolocation
@@ -75,9 +78,22 @@ def write_json_sf_top5():
 	for k, v in enumerate(instagram_top_5_house):
 		print k, v
 		idx = retsly_ids.index(v)
+		inst_data = instagram_top_5_house[v]
+		inst_img_urls = ""
+		inst_captions = ""
+		count = 0
+		for k2, v2 in enumerate(inst_data):
+			inst_one = inst_data[v2]
+			if inst_one['caption'] != None:
+				inst_captions += inst_one['caption']['text']
+				inst_captions += '_!@#' + str(k2) + '*()_'
+			if inst_one['img'] != None:
+				inst_img_urls += inst_one['img']
+				inst_img_urls += '_!@#' + str(k2) + '*()_'
+
 		sf_test_top_5_house.append({'name' : retsly_ids[idx], 'latitude' : float(coordinates[idx][1]),
 			'longitude' : float(coordinates[idx][0]), 'url' : house_img_urls[idx], 'description' : descriptions[idx],
-			'address' : address[idx]})
+			'address' : address[idx], 'inst_captions' : inst_captions, 'inst_img_urls' : inst_img_urls})
 		# store house info to json
 		pdb.set_trace()
 
@@ -113,6 +129,12 @@ def query_instagram_location():
 if __name__ == "__main__":
 	query = 'restaurant'
 	pipeline = _get_pipeline('instagram')
+	lg = -122.4509693 
+	la = 37.7584192
+	rg = 1
+	Database_query = _get_database(lg, la, rg)
+	res = Database_query.connect()
+	pdb.set_trace()
 	#sf_batch_full_pipeline(query)
 	#urls, text = single_address_full_pipeline(pipeline, query)
 	#more_sf_data('static_10_sf_city_larger')

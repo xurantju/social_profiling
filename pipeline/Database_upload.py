@@ -25,6 +25,8 @@ if __name__ == '__main__':
                                                               "latitude": config[i]['latitude'],
                                                               "longitude": config[i]['longitude']
                                                               },
+                                                              "inst_img_urls" : config[i]['inst_img_urls'],
+                                                              "inst_captions" : config[i]['inst_captions'],
                                                               "address": config[i]['address'], 
                                                               "url": config[i]['url']
                                                               }), {
