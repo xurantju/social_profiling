@@ -60,10 +60,12 @@ class Pipeline(object):
 		except:
 		    os.mkdir(dirname)   
 		# before 11.6.23.59.59; 11.5.23.59.59; 11.4.23.59.59; 11.3.23.59.59; 11.2.23.59.59
-		self.epoch_timestamps = ['1446883199', '1446796799', '1446710399', '1446623999',
-			'1446537599', '1446451199', '1446361199', '1446274799', '1446188399', '1446101999']
+		self.epoch_timestamps = ['1446951599', '1446883199', '1446796799', '1446710399', '1446623999',
+			'1446537599', '1446451199', '1446361199', '1446274799', '1446188399', '1446101999', '1446015599',
+			'1445929199', '1445842799', '1445756399', '1446857999', '1446771599', '1446685199', '1446598799',
+			'1446512399', '1446425999', '1446335999', '1446249599', '1446163199', '1446076799']
 		print 'loading wordvec model: 3.6GB'
-		self.wordvec_model = Word2Vec.load_word2vec_format('/home/parallels/ranxu/data/GoogleNews-vectors-negative300.bin', binary=True)
+		#self.wordvec_model = Word2Vec.load_word2vec_format('/home/parallels/ranxu/data/GoogleNews-vectors-negative300.bin', binary=True)
 
 	@staticmethod
 	def query_instagram_location(geolocation_tuple):
@@ -82,15 +84,19 @@ class Pipeline(object):
 		coordinates = []
 		address = []
 		retsly_ids = []
-		data = _load_json('data/data.json')
+		house_image_urls = []
+		descriptions = []
+		data = _load_json('data/data_sf.json')
 		for line in data:
 			coordinates.append(line['coordinates'])
 			address.append(line['address'])
 			retsly_ids.append(line['id'])
-		return coordinates, address, retsly_ids
+			house_image_urls.append(line['url'])
+			descriptions.append(line['shortDescription'])
+		return coordinates, address, retsly_ids, house_image_urls, descriptions
 
 	# step 2: retrieve instagram media from retsly geolocation
-	def query_instagram_media(self, geolocation_tuples, retsly_ids, max_queries=5, sim_thres = 0.1):
+	def query_instagram_media(self, geolocation_tuples, retsly_ids, save_name, max_queries=5):
 		# assume input a batch of geolocation
 		retsly_data = dict()
 		for num_query in xrange(len(geolocation_tuples)):
@@ -126,7 +132,7 @@ class Pipeline(object):
 						instagram_data[ids] = data
 				print 'query %d times stored instance %d ' % (query_time, len(instagram_data))		
 			retsly_data[retsly_id] = instagram_data
-		_save_obj(retsly_data, 'static_10_sf_city')
+		_save_obj(retsly_data, save_name)
 
 	# step 3: do tag/key word retrieval
 	def post_retrieval(self, retsly_data, query):
@@ -179,7 +185,8 @@ class Pipeline(object):
 			except:
 				# no words, though we already checked caption...anyway...
 				mean_sim = -1
-			inst_similarities[v] = mean_sim
+			if not np.isnan(mean_sim):
+				inst_similarities[v] = mean_sim
 		sorted_sim = sorted(inst_similarities.items(), key=operator.itemgetter(1), reverse=True)
 
 		# retrieve top 9
@@ -189,7 +196,7 @@ class Pipeline(object):
 		return_text = []
 		for i in xrange(len(top_selection)):
 			score = top_selection[i][1]
-			pdb.set_trace()
+			#pdb.set_trace()
 			inst_id = top_selection[i][0]
 			inst_data = retsly_data[inst_id]
 			text = None
