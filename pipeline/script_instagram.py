@@ -101,21 +101,7 @@ def write_json_sf_top5():
 		json.dump(sf_test_top_5_house, fp)
 
 	pdb.set_trace()	
-'''
-"name": config[i]['name'],
-"des": config[i]['des'],
-"location": {
-"__type": "GeoPoint",
-"latitude": config[i]['latitude'],
-"longitude": config[i]['longitude']
-},
-"date": {
-"__type": "Date",
-"iso": config[i]['date']
-},
-"url": config[i]['url']
-}), {
-'''
+
 def query_instagram_location():
 	query_loc_id = 'https://api.instagram.com/v1/locations/search?lat=37.788900&lng=-122.3981040&client_id=f936a78d343c4f758fbb54a4ec51eb20'
 	loc_obj = json.load(urllib2.urlopen(query_loc_id))

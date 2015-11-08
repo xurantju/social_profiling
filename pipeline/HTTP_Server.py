@@ -1,11 +1,20 @@
 #!/usr/bin/python
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+from script_instagram import _get_pipeline, _get_database
 
-PORT_NUMBER = 8080
+PORT_NUMBER = 8000
 
 #This class will handles any incoming request from
 #the browser 
 class myHandler(BaseHTTPRequestHandler):
+
+	#def __init__(self):
+	#	pass
+		#self.pipeline = _get_pipeline('instagram')
+		#lg = -122.4509693 
+		#la = 37.7584192
+		#rg = 1
+		#self.Database_query = _get_database(lg, la, rg)
 	
 	def parse_string(self):
 		str_queries = dict()
@@ -27,6 +36,15 @@ class myHandler(BaseHTTPRequestHandler):
 		queries = self.parse_string()
 		for k, v in enumerate(queries):
 			print( v, queries[v])
+			pdb.set_trace()
+			# do search database
+
+
+			# do computation
+
+			# generate return urls 
+
+
 			
 		self.send_response(200)
 		self.send_header('Content-type','text/html')
