@@ -7,7 +7,8 @@ if __name__ == '__main__':
     connection.connect()
     
     for i in range(len(config)):
-        #imgpath = config[i]['image']
+      print(i)  
+      #imgpath = config[i]['image']
        # remotepath = '/1/files/zillow%06d.jpg' % i
        # connection.request('POST', remotepath, open(imgpath, 'rb').read(), {
        #     "X-Parse-Application-Id": "lzjoICIugojwHnWEIBgTspWETcbE5noF1l68bWND",
