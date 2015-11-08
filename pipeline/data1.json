@@ -1,0 +1,10 @@
+[
+{
+"region" : "eu-west-1",
+"instanceType": "m1.small"
+},
+{
+"region" : "2eu-west-1",
+"instanceType": "2m1.small"
+}
+]
